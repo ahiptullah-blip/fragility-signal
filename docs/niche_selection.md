@@ -1,6 +1,8 @@
 # Niche Selection (Prompt 1): Decision Analysis
 
-Status: **PROPOSED, awaiting owner confirmation.** No data has been sourced and no code written.
+Status: **CONFIRMED 2026-11-07.** Owner chose "all application software"; the remaining open
+questions were delegated and are resolved in docs/decisions.md (2026-11-07). The questions list at
+the end is kept for the record.
 Date: 2026-11-07
 
 ## Scoring scale

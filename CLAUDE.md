@@ -32,6 +32,6 @@ A system that scores entities in a defined niche on their probability of a "coll
 - Keep docs/decisions.md current. It is the memory of this project.
 
 ## Current status
-- Niche: [fill after Prompt 1]
+- Niche: US-listed application software (SIC 7370–7373), 10-K filers, public float $50M or more, scoring from 2012. Kill gate: at least 50 labeled events or switch to banks. See docs/decisions.md (2026-11-07).
 - Event taxonomy: [fill after Prompt 3]
 - Baseline model: not yet established
