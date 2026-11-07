@@ -24,8 +24,9 @@ choices to Claude "for the best outcome". Each is recorded with its reason and w
 | Second iteration | Banks (all FDIC-insured institutions) | Only other niche passing every gate; out-of-domain test of the method | — |
 | Private HR tech | Deferred; needs separate approval (rule 7) | Fails ground-truth and point-in-time gates as a standalone backtest | — |
 
-Open item: SEC EDGAR requires a User-Agent with a contact name and email. It will be read from the
-`SEC_USER_AGENT` environment variable and will not default to the owner's email.
+SEC User-Agent (resolved 2026-11-07): owner approved using their email as the EDGAR contact. It is
+read from `SEC_USER_AGENT` in a local, gitignored `.env`; `.env.example` holds the template. The
+email is not committed to the repo.
 
 ## 2026-11-07 — Project initialized
 - Created repo with CLAUDE.md as the project charter.
