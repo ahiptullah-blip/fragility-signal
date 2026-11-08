@@ -3,6 +3,28 @@
 The memory of this project. Every change to a core definition, every weight change
 (metric before, metric after, reason), and every scope decision goes here, newest first.
 
+## 2026-11-08 — Event taxonomy and labels built (Prompt 3), DRAFT pending owner review
+Taxonomy: src/labels/TAXONOMY.md (v0.2). Events: src/labels/events.csv. Report: docs/labels_report.md.
+Nothing here is frozen until the owner approves; on approval the taxonomy becomes v1.0.
+
+| Decision | Choice | Reason |
+|---|---|---|
+| Order | Labels (Prompt 3) built before signal ingestion (Prompt 2 Step 3) | CLAUDE.md: collapse events are defined before looking at signal data. No signal data has been ingested |
+| Data access | Personal cloud environment `fragility-signal` created, allowing www.sec.gov, data.sec.gov, efts.sec.gov (owner approved the prompt) | SEC hosts were blocked by the default network policy |
+| Universe source | SEC Financial Statement Data Sets (sub.txt, 2009q1 to 2026q3): SIC *as filed* on each 10-K | The EDGAR browse-by-SIC list uses *current* SIC and missed 10-14% of historical software filers (e.g. Yahoo, MicroStrategy), a survivorship hole |
+| Public float source | dei:EntityPublicFloat via the XBRL companyconcept API, matched to the 10-K by accession | FSDS num.txt carries almost no cover-page float; companyconcept gives each value with its filing date (99.4% of niche 10-Ks tagged) |
+| Shell / SPAC exclusion | 10-Ks filed under a blank-check name are ineligible; events in a SPAC period are dropped | Implements the 2026-11-07 shell exclusion. 24 SPACs carried software SIC codes and would otherwise be in the universe |
+| New Tier 1 type | T1_REPORTING_CEASED (company stops filing with no Form 15, merger or delisting) | Silent exits were the main label-quality gap (7 of 8 silent exits are now labeled) |
+| Tier 1 delisting rule | Form 25-NSE citing Rule 12d2-2(b) on the common stock only | The form states the rule; 12d2-2(a) removals are merger exchanges and redemptions |
+| Manual adjudications | src/labels/adjudications.csv, each drop with a reason (17 at v0.2) | Item codes alone produced false positives (subsidiary bankruptcies, note redemptions tagged 2.04) |
+| Proposed positive label | Tier 1 + Tier 2 | Tier 1 alone has 33 scorable entities (fails the 50 gate); Tier 2 is when a vendor-risk buyer must act |
+| Kill gate | PASS: 77 scorable Tier 1 + Tier 2 events at 70 entities (target of 100 not met) | — |
+| Data end | 2026-11-07. Windows past it are flagged censored; censored zeros are excluded from evaluation | — |
+
+Open questions for the owner: whether to cap float (the universe includes large caps such as
+Microsoft, which dilute the base rate but are legitimate vendor-risk entities), and approval
+or changes to the taxonomy before freezing.
+
 ## 2026-11-07 — Niche selected (Prompt 1)
 Full analysis: docs/niche_selection.md. Owner chose the boundary; owner delegated the remaining
 choices to Claude "for the best outcome". Each is recorded with its reason and what would reopen it.

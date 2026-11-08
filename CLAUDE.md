@@ -34,5 +34,5 @@ A system that scores entities in a defined niche on their probability of a "coll
 ## Current status
 - Niche: US-listed application software (SIC 7370–7373), 10-K filers, public float $50M or more, scoring from 2012. Kill gate: at least 50 labeled events or switch to banks. See docs/decisions.md (2026-11-07).
 - Signal library: 30 candidates, 12 shortlisted, awaiting owner review (docs/signal_library.md)
-- Event taxonomy: [fill after Prompt 3]
+- Event taxonomy: DRAFT v0.2 awaiting owner review, not frozen (src/labels/TAXONOMY.md). Proposed positive label: Tier 1 + Tier 2. 77 scorable events at 70 entities; kill gate passes.
 - Baseline model: not yet established
