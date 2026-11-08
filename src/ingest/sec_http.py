@@ -7,6 +7,7 @@
 """
 from __future__ import annotations
 
+import gzip
 import hashlib
 import os
 import threading
@@ -50,11 +51,15 @@ def cache_path(url: str, subdir: str) -> Path:
     return RAW / subdir / f"{h}_{name}"[:150]
 
 
-def get(url: str, subdir: str = "misc", refresh: bool = False, retries: int = 5) -> bytes | None:
-    """Fetch url (cached). Returns None on 404."""
+def get(url: str, subdir: str = "misc", refresh: bool = False, retries: int = 5,
+        compress: bool = False) -> bytes | None:
+    """Fetch url (cached). Returns None on 404. compress=True stores the snapshot gzipped."""
     path = cache_path(url, subdir)
+    if compress:
+        path = path.with_name(path.name + ".gz")
     if path.exists() and not refresh:
-        return path.read_bytes()
+        data = path.read_bytes()
+        return gzip.decompress(data) if compress else data
     headers = {"User-Agent": _user_agent(), "Accept-Encoding": "gzip, deflate"}
     for attempt in range(retries):
         _throttle()
@@ -70,6 +75,6 @@ def get(url: str, subdir: str = "misc", refresh: bool = False, retries: int = 5)
             continue
         r.raise_for_status()
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(r.content)
+        path.write_bytes(gzip.compress(r.content) if compress else r.content)
         return r.content
     raise RuntimeError(f"Failed after {retries} attempts: {url}")

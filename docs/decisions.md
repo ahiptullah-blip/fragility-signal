@@ -3,6 +3,24 @@
 The memory of this project. Every change to a core definition, every weight change
 (metric before, metric after, reason), and every scope decision goes here, newest first.
 
+## 2026-11-08 — Signal ingestion and implementation (Prompt 2 Step 3)
+All 12 approved signals implemented in src/features/signals.py, one function each, signature
+(entity_id, as_of_date). Data quality report: docs/data_quality_report.md. No labels are joined
+to signals yet; that happens only in the backtest.
+
+| Decision | Choice | Reason |
+|---|---|---|
+| Point-in-time cutoff | A filing is usable only if its filing date is strictly before the scoring date | Conservative: a filing made on the scoring date may be after the score was produced |
+| Restated values | First-published value per (company, tag, period, duration); 10-K/A and 10-Q/A never loaded | CLAUDE.md rule 1 |
+| Sources (all free SEC EDGAR, no new source class) | Financial Statement Data Sets (as-filed financials), companyconcept API (cover-page shares, debt maturity schedule), filing index (NT filings, 8-K items), 10-K and 8-K documents (headcount, MD&A, customer concentration, auditor change, CEO/CFO departure) | Matches the approved shortlist; raw snapshots kept under data/raw/ |
+| Storage | duckdb (data/fragility.duckdb) for as-filed facts; CSV for smaller interim tables | CLAUDE.md conventions |
+| F2 refinancing wall basis | 24-month maturity schedule where tagged (24% of entity-quarters); else balance-sheet current debt, 12 months only (28%); 0 if no debt (48%) | Many issuers (e.g. 2U) never tag the maturity schedule. Known limitation: debt due in months 13-24 is invisible under the fallback |
+| Year-ago values | Read from the period end a year earlier, including the current filing's comparative columns | Companies that change fiscal calendar (often after a de-SPAC) have no filing exactly a year earlier |
+| B3 auditor change encoding | 0 none, 1 dismissed/replaced, 2 resigned or declined to stand | Signal library: resignation is worse |
+| Guards (value set to missing, documented in the quality report) | DSO: quarterly revenue < $1M or DSO > 730 days. Gross margin and revenue growth: revenue base < $5M. Shares: year-over-year ratio beyond 50x (unit mismatch). Headcount: ratio outside 0.2-5x (parse error). MD&A: section length changes more than 2x (boundary error) | The first quality report showed values in the thousands of percent from near-zero denominators, unit mismatches and parse errors |
+| Text classifier precision (spot checks) | Customer concentration 10 of 10 after fixes; CEO/CFO departures about 75% | Logged so the backtest can weigh B2 accordingly |
+| Not fixed (flagged only) | Stock splits in F5; cap of 40 quarters in F1 | Split adjustment needs a split history; F1 cap means profitable companies all tie |
+
 ## 2026-11-08 — Taxonomy v1.0 FROZEN; signal shortlist approved
 Owner decisions on the Prompt 3 review:
 1. Taxonomy approved and frozen as v1.0 (src/labels/TAXONOMY.md). Positive label = Tier 1 + Tier 2.

@@ -61,3 +61,72 @@ def main() -> pd.DataFrame:
 
 if __name__ == "__main__":
     main()
+
+
+# ---------------------------------------------------------------------------- facts (num.txt)
+# Tags needed by the approved signals (docs/signal_library.md). Only undimensioned,
+# non-coregistrant values from original 10-K / 10-KT / 10-Q filings are kept.
+FACT_TAGS = [
+    # cash and short-term investments (F1, F2)
+    "CashAndCashEquivalentsAtCarryingValue", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+    "Cash", "ShortTermInvestments", "MarketableSecuritiesCurrent",
+    "AvailableForSaleSecuritiesDebtSecuritiesCurrent", "AvailableForSaleSecuritiesCurrent",
+    "HeldToMaturitySecuritiesCurrent",
+    # operating cash flow (F1)
+    "NetCashProvidedByUsedInOperatingActivities",
+    "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
+    # receivables (F4)
+    "AccountsReceivableNetCurrent", "ReceivablesNetCurrent",
+    # revenue and gross profit (F4, S2, O1)
+    "Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax",
+    "RevenueFromContractWithCustomerIncludingAssessedTax", "SalesRevenueNet",
+    "SalesRevenueServicesNet", "SalesRevenueGoodsNet", "GrossProfit", "CostOfRevenue",
+    "CostOfGoodsAndServicesSold", "CostOfServices", "CostOfGoodsSold",
+    # shares (F5 fallback)
+    "CommonStockSharesOutstanding",
+    # debt presence (F2: distinguishes "no debt" from "debt but no schedule")
+    "LongTermDebt", "LongTermDebtNoncurrent", "LongTermDebtCurrent", "DebtCurrent",
+    "ConvertibleNotesPayable", "ConvertibleDebtNoncurrent", "ConvertibleNotesPayableCurrent",
+    "ConvertibleDebtCurrent", "LongTermNotesPayable", "SeniorNotes", "LineOfCredit",
+]
+FACTS_DB = ROOT / "data" / "fragility.duckdb"
+
+
+def extract_facts(ciks: list[str]) -> None:
+    """Load the needed facts for the given companies into duckdb table `facts`.
+
+    Schema: cik, adsh, form, fp, fy, period, filed, accepted, tag, ddate (period date),
+    qtrs (0 = instant, 1 = quarter, 2-4 = year-to-date / annual), uom, value.
+    """
+    import tempfile
+
+    import duckdb
+
+    sub = pd.read_csv(OUT, dtype={"cik": str, "adsh": str})
+    sub = sub[sub.cik.isin(set(ciks)) & sub.form.isin(["10-K", "10-KT", "10-Q"])]
+    con = duckdb.connect(str(FACTS_DB))
+    con.execute("DROP TABLE IF EXISTS facts")
+    con.register("subdf", sub[["adsh", "cik", "form", "fp", "fy", "period", "filed", "accepted"]])
+    con.execute("CREATE TEMP TABLE subs AS SELECT * FROM subdf")
+    tags = ",".join(f"'{t}'" for t in FACT_TAGS)
+    first = True
+    for q in sorted(sub.quarter.unique()):
+        raw = get(BASE.format(q=q), subdir="fsds")
+        with tempfile.TemporaryDirectory() as tmp:
+            zipfile.ZipFile(io.BytesIO(raw)).extract("num.txt", tmp)
+            sql = f"""
+                SELECT s.cik, s.adsh, s.form, s.fp, s.fy, s.period, s.filed, s.accepted,
+                       n.tag, n.ddate, CAST(n.qtrs AS INT) AS qtrs, n.uom, CAST(n.value AS DOUBLE) AS value
+                FROM read_csv('{tmp}/num.txt', delim='\\t', header=true, all_varchar=true,
+                              quote='', ignore_errors=true) n
+                JOIN subs s ON s.adsh = n.adsh
+                WHERE n.tag IN ({tags}) AND (n.segments IS NULL OR n.segments = '')
+                  AND (n.coreg IS NULL OR n.coreg = '') AND n.value IS NOT NULL
+            """
+            if first:
+                con.execute(f"CREATE TABLE facts AS {sql}")
+                first = False
+            else:
+                con.execute(f"INSERT INTO facts {sql}")
+        print(q, con.execute("SELECT count(*) FROM facts").fetchone()[0], flush=True)
+    con.close()
