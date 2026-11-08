@@ -15,6 +15,7 @@ negatives.
 """
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -25,6 +26,8 @@ from src.ingest.sec_http import ROOT
 EVENTS = ROOT / "src" / "labels" / "events.csv"
 DATA_END = pd.Timestamp("2026-11-07")  # filing index pulled 2026-11-08; last complete day
 POSITIVE_TIERS = (1, 2)
+# Taxonomy v1.0 frozen 2026-11-08. Changing events.csv requires a logged decision and a new hash.
+FROZEN_SHA256 = "cbeb3f4615f76742b09cb5dae24e7c25aec95011a447a2080a2fa1ceb4fe96f9"
 WINDOWS = (6, 12, 24)
 
 
@@ -36,8 +39,12 @@ class Label:
     event_date: pd.Timestamp | None = None
 
 
-@lru_cache(maxsize=1)
-def load_events(path: str = str(EVENTS)) -> pd.DataFrame:
+@lru_cache(maxsize=2)
+def load_events(path: str = str(EVENTS), allow_unfrozen: bool = False) -> pd.DataFrame:
+    digest = hashlib.sha256(open(path, "rb").read()).hexdigest()
+    if digest != FROZEN_SHA256 and not allow_unfrozen:
+        raise RuntimeError(f"{path} does not match the frozen event table (taxonomy v1.0). "
+                           "Log the change in docs/decisions.md and update FROZEN_SHA256.")
     ev = pd.read_csv(path, dtype={"entity_id": str}, parse_dates=["event_date"])
     return ev.sort_values("event_date")
 

@@ -1,7 +1,9 @@
 # Collapse Event Taxonomy
 
-Status: **DRAFT v0.2, awaiting owner review. Not frozen.** On approval this becomes v1.0
-(frozen); after that, any change is a logged decision in docs/decisions.md.
+Status: **v1.0 FROZEN 2026-11-08** (owner approved). Any change to this file, to
+`events.csv` or to `adjudications.csv` is a logged decision in docs/decisions.md, never a quiet edit.
+Frozen event table: `src/labels/events.csv`, SHA-256 `cbeb3f4615f76742b09cb5dae24e7c25aec95011a447a2080a2fa1ceb4fe96f9`. `src/labels/labels.py` refuses to
+load a different file unless explicitly told to.
 Niche: US-listed application software (see docs/decisions.md).
 Implementation: `src/labels/build_events.py` → `src/labels/events.csv`.
 
@@ -59,7 +61,7 @@ excluded rather than approximated.
 | Major customer loss | No standard filing item; free text only, low reliability | Manual review of 10-K customer disclosures |
 | Covenant breach without acceleration | Waivers and amendments are not disclosed in a dated, itemized form | Text extraction from credit-agreement amendments |
 
-## Recommended positive label for the baseline
+## Positive label for the baseline (approved 2026-11-08)
 
 **Positive = any Tier 1 or Tier 2 event inside the forward window. Tier 3 is recorded only.**
 

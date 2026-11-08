@@ -1,6 +1,6 @@
 # Signal Library (Prompt 2, Steps 1 and 2)
 
-Status: **Shortlist PROPOSED, awaiting owner review.** No data ingested, no code written.
+Status: **Shortlist APPROVED 2026-11-08.** Implementation in src/features/.
 Date: 2026-11-07
 Niche: US-listed application software (SIC 7370–7373), 10-K filers, public float $50M or more,
 scoring from 2012. See docs/decisions.md.

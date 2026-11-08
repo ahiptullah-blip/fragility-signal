@@ -3,6 +3,17 @@
 The memory of this project. Every change to a core definition, every weight change
 (metric before, metric after, reason), and every scope decision goes here, newest first.
 
+## 2026-11-08 — Taxonomy v1.0 FROZEN; signal shortlist approved
+Owner decisions on the Prompt 3 review:
+1. Taxonomy approved and frozen as v1.0 (src/labels/TAXONOMY.md). Positive label = Tier 1 + Tier 2.
+   Frozen event table src/labels/events.csv, SHA-256 `cbeb3f4615f76742b09cb5dae24e7c25aec95011a447a2080a2fa1ceb4fe96f9`, enforced by src/labels/labels.py.
+   From here, any change to the taxonomy, events.csv or adjudications.csv is logged here with
+   the reason and the new hash.
+2. T1_REPORTING_CEASED kept.
+3. Float ceiling: left open. The universe keeps large caps for now; revisit before the baseline.
+4. Signal shortlist (12 signals, docs/signal_library.md) approved as proposed. Proceeding to
+   ingestion (Prompt 2 Step 3). Signals are computed only after the freeze, satisfying rule 2.
+
 ## 2026-11-08 — Event taxonomy and labels built (Prompt 3), DRAFT pending owner review
 Taxonomy: src/labels/TAXONOMY.md (v0.2). Events: src/labels/events.csv. Report: docs/labels_report.md.
 Nothing here is frozen until the owner approves; on approval the taxonomy becomes v1.0.
