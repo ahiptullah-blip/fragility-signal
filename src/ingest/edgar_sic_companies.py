@@ -1,4 +1,6 @@
-"""Ingest: every EDGAR registrant ever assigned SIC 7370-7373.
+"""NOT USED for the universe (kept as a survivorship cross-check). See docs/decisions.md 2026-11-08.
+
+Ingest: every EDGAR registrant currently assigned SIC 7370-7373.
 
 Source: EDGAR company browse by SIC (Atom output). It lists registrants with that SIC
 regardless of whether they still file, so failed and deregistered companies are included.
